@@ -1,87 +1,340 @@
 ---
 name: web-scraping-api
-description: Load first for any request to scrape, fetch or read the content of a URL ("scrape this page", "get this page", "fetch the JSON at", "read this site in markdown"), before calling web_get_page or web_scrape. Covers Scrapfly's Web Scraping API: which tool and settings cost least, JavaScript rendering, proxy pool and country, the Unblocker, headers, cookies, POST bodies, browser scenarios, cache, output formats and error codes.
+description: 'Load first for any request to scrape, fetch or read the content of a URL ("scrape this page", "get this page", "fetch the JSON at", "read this site in markdown"), before calling web_get_page or web_scrape. Covers Scrapfly''s Web Scraping API: which tool and settings cost least, JavaScript rendering, proxy pool and country, the Unblocker, headers, cookies, POST bodies, browser scenarios, cache, output formats and error codes.'
 user-invocable: false
 ---
 
-# Web Scraping API
+# Scrapfly Scraper
 
-One request fetches one URL through Scrapfly's proxies, in a real browser when
-asked, and returns the content with its status code and cost. Documentation:
-https://scrapfly.io/docs/scrape-api/getting-started
+Use the Scrapfly Scraper API to collect web page data with proxy rotation, anti-bot bypass, JavaScript rendering, and JavaScript scenarios for browser control.
 
-## Pick the tool
+## When to use
 
-- **`web_get_page`**: JavaScript rendering and the Unblocker always on, markdown
-  by default. Takes `url`, `country`, `format`, `format_options`, `proxy_pool`,
-  `rendering_wait`, `capture_page`, `capture_flags`, `extraction_model`. The
-  shortest way to read a page, at 6 credits or more.
-- **`web_scrape`**: every option of the API below. `render_js` and `unblocker`
-  are on unless set to `false`.
+- Scraping web pages (HTML, JSON, text, markdown)
+- Bypassing anti-bot protections (Cloudflare, DataDome, PerimeterX, Kasada, and more)
+- Collecting data through rotating proxies with geo-targeting
+- Rendering JavaScript-heavy pages with headless browsers
+- Control the browser using JavaScript scenario for common actions (waiting for selectors, clicking, filling elements, etc.)
+- Session-reuse for session-presited scraping
+- Capturing browser XHR call data
 
-## Spend the fewest credits
+## Setup
 
-1. A static page or a JSON endpoint: `web_scrape` with `render_js: false` and
-   `unblocker: false` costs 1 credit through a datacenter proxy.
-2. Content built by JavaScript: `render_js: true` adds 5 credits.
-3. A page that needs residential proxies and a real browser to load: keep the
-   Unblocker on. It has no flat fee, but it can move the request to a
-   residential proxy and a browser, which raises the cost.
-4. `proxy_pool: public_residential_pool` costs 25 credits instead of 1: use it for
-   a page that needs residential proxies.
-5. `cache: true` serves a repeat within `cache_ttl` seconds (86400 by default)
-   for 1 credit.
+```bash
+pip install scrapfly-sdk
+```
 
-`api_cost` and `cost_details` in the tool result give the cost of the call.
+The API key must be provided via environment variable `SCRAPFLY_API_KEY` or passed directly to the client.
 
-## Main parameters
+## API Reference
 
-| Parameter | What it does |
-|---|---|
-| `url` | The page to fetch, `http://` or `https://` |
-| `format` | `markdown`, `text`, `clean_html`, `json` or `raw`; options `no_links`, `no_images`, `only_content` for markdown and text |
-| `render_js` | Load the page in a browser (+5 credits): on by default on `web_scrape`; set it to `false` for a static page |
-| `rendering_wait` | Milliseconds to wait after the page loads (1000 by default with a browser) |
-| `wait_for_selector` | A CSS or XPath selector to wait for, 15 seconds at most |
-| `js` | JavaScript to run in the page before the content is read |
-| `js_scenario` | Browser steps: `click`, `fill`, `scroll`, `wait`, `wait_for_selector`, `wait_for_navigation`, `execute`; needs `render_js` |
-| `unblocker` | The Unblocker, for pages that need residential proxies and a real browser; its former name `asp` still works |
-| `proxy_pool` | `public_datacenter_pool` (default) or `public_residential_pool` |
-| `country` | Proxy country, ISO 3166-1 alpha-2 (`us`, `de`) |
-| `lang` | Page languages, sent as `Accept-Language` |
-| `method`, `body`, `headers`, `cookies` | The request itself: `GET` by default, `POST`, `PUT`, `PATCH`, `OPTIONS`, `HEAD` |
-| `cache`, `cache_ttl`, `cache_clear` | Serve and refresh from Scrapfly's cache |
-| `retry`, `timeout` | Retries on transient errors (on by default). A custom `timeout` (milliseconds, 150000 at most) needs `retry: false` and, on `web_scrape`, `unblocker: false`: with the Unblocker on, or a retry, the API sets the timeout itself and drops yours |
-| `extraction_prompt`, `extraction_model` | Structured data from the page: see `scrapfly:extraction-api`. They turn the Unblocker on whatever `unblocker` says |
-| `screenshots`, `screenshot_flags` | Images taken during the scrape, billed with the scrape |
+**Endpoint:** `https://api.scrapfly.io/scrape`
+The HTTP method is forwarded to the upstream URL.
+To retrieve data from a web page or an API, use the GET method, which is the default method.
+If the API resource like an API requries other methods, like POST. You can use it via the `method` parameter of the `ScrapeConfig`
 
-With `render_js`, only the `Cookie` and `Referer` headers are sure to reach the
-website. The Unblocker may change the proxy pool, the country, the browser and
-some headers to load the page: `context.proxy.country` tells which country served
-it.
+### ScrapflyClient
 
-## Errors
+```python
+from scrapfly import ScrapflyClient, ScrapeConfig, ScrapeApiResponse
+import os
 
-The error comes with a code (`ERR::...`), a `retryable` flag and a documentation
-page at `https://scrapfly.io/docs/scrape-api/error/<code>`.
+client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
+```
 
-| Code | Meaning | What to do |
-|---|---|---|
-| `ERR::SCRAPE::BAD_UPSTREAM_RESPONSE` | The website answered with a status of 400 or more | A 404 or 410 is the website's own answer. Otherwise check the URL, the method, the headers and the cookies, then read the code's page; a 403, 429 or 5xx is not billed while the account has Scrape Failed Protection |
-| `ERR::ASP::SHIELD_PROTECTION_FAILED` | The Unblocker did not get the page this time | Check the URL and retry later; contact support with the scrape's log if it persists |
-| `ERR::SCRAPE::OPERATION_TIMEOUT` | An operation took too long (504, retryable) | Retry; lighten the scenario or the wait; with `unblocker: false`, raise `timeout` with `retry: false` |
-| `ERR::SCRAPE::DOM_SELECTOR_NOT_FOUND` | `wait_for_selector` did not appear within 15 seconds (billed) | Check the selector against the rendered content returned |
-| `ERR::SCRAPE::CONFIG_ERROR` | A parameter is invalid (400) | Read the message, fix the parameter |
-| `ERR::SCRAPE::DNS_NAME_NOT_RESOLVED` | The domain does not resolve | Check the URL |
-| `ERR::SCRAPE::TOO_MANY_CONCURRENT_REQUEST`, `ERR::THROTTLE::MAX_CONCURRENT_REQUEST_EXCEEDED` | The account's or the project's concurrency is used up (429, retryable) | Run fewer requests at once |
-| `ERR::SCRAPE::QUOTA_LIMIT_REACHED` | The plan's monthly credits are used up (429) | Upgrade the plan or wait for the next period |
-| `ERR::SCRAPE::PROJECT_QUOTA_LIMIT_REACHED` | The project's own credit limit is reached (429) | Raise the limit in the project settings |
-| HTTP 401 | The sign-in expired, or the project only accepts some IP addresses | Sign in again from `/mcp`; the message names the address to allow |
+### ScrapeConfig Parameters
 
-Full list: https://scrapfly.io/docs/scrape-api/errors
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | str | **required** | Target URL to scrape |
+| `method` | str | `"GET"` | HTTP method: GET, POST, PUT, PATCH, HEAD, OPTIONS |
+| `headers` | dict | None | Custom HTTP headers |
+| `cookies` | dict | None | Custom cookies (merged into `headers["cookie"]`) |
+| `body` | str | None | Raw request body for POST/PUT/PATCH; used when you pre-encode payload |
+| `data` | dict | None | Form/JSON data for POST/PUT/PATCH; encoded according to `Content-Type` when `body` is not provided |
+| `timeout` | int | None | Request timeout in ms (default ~150,000ms) |
+| `retry` | bool | True | Auto-retry on network failures |
+| `country` | str | None | Proxy country (ISO 3166-1 alpha-2, e.g. `"us"`, `"de"`) |
+| `proxy_pool` | str | `"public_datacenter_pool"` | Proxy pool: `"public_datacenter_pool"` or `"public_residential_pool"` |
+| `session` | str | None | Session ID to persist cookies/fingerprint across requests |
+| `session_sticky_proxy` | bool | False | Keep the same proxy IP for a given `session` |
+| `unblocker` | bool | False | Enable the Unblocker anti-bot bypass. `asp` is the permanently supported deprecated alias; when both are supplied, `asp` wins |
+| `render_js` | bool | False | Enable headless browser JavaScript rendering (+5 credits) |
+| `rendering_wait` | int | None | Wait time in ms after page load (requires `render_js=True`) |
+| `rendering_stage` | str | `"complete"` | Browser readiness stage: `"complete"` or `"domcontentloaded"` (requires `render_js=True`) |
+| `wait_for_selector` | str | None | CSS/XPath selector to wait for (requires `render_js=True`) |
+| `js` | str | None | JavaScript code to execute in the browser (auto-encoded) |
+| `js_scenario` | list | None | List of browser actions (click, fill, scroll, wait, etc.) |
+| `auto_scroll` | bool | None | Automatically scroll page during rendering for lazy-loaded content (requires `render_js=True`) |
+| `screenshots` | dict | None | Capture screenshots: `{"fullpage": "png"}` or `{"selector": ".element"}` (requires `render_js=True`) |
+| `screenshot_flags` | list[str] | None | Screenshot options: `"load_images"`, `"dark_mode"`, `"block_banners"`, `"high_quality"`, `"print_media_format"` |
+| `format` | str | `"raw"` | Output format: `"raw"`, `"clean_html"`, `"json"`, `"markdown"`, `"text"` |
+| `format_options` | list[str] | None | Format modifiers (markdown only): `"no_images"`, `"no_links"`, `"only_content"` |
+| `extract` | dict | None | Raw extraction spec to apply on the response (encoded and sent as `extract`) |
+| `extraction_template` | str | None | Name of a saved server-side extraction template |
+| `extraction_ephemeral_template` | dict | None | Inline JSON extraction template used once (`ephemeral:`) |
+| `extraction_prompt` | str | None | Natural language instructions for Extraction API |
+| `extraction_model` | str | None | LLM model name to use for Extraction API |
+| `cache` | bool | False | Enable response caching |
+| `cache_ttl` | int | None | Cache time-to-live in seconds |
+| `cache_clear` | bool | False | Clear any existing cached response when `cache=True` |
+| `dns` | bool | False | Collect DNS records and timings in `result.dns` (slower) |
+| `ssl` | bool | False | Collect SSL certificate details in `result.ssl` (slower) |
+| `debug` | bool | False | Enable debug recording and extra metadata |
+| `raise_on_upstream_error` | bool | True | Raise exceptions for upstream 4xx/5xx HTTP responses |
+| `correlation_id` | str | None | Custom ID for request tracking across systems |
+| `tags` | list[str] | None | Custom tags for request organization and analytics |
+| `lang` | list[str] | None | Accept-Language values, e.g. `["en-US", "en"]` |
+| `os` | str | None | Choose a browser operating system such as `"win"`, `"mac"`, or `"linux"` |
+| `webhook` | str | None | Named webhook for async scrape completion callbacks |
+| `cost_budget` | int | None | Max credits to spend on unblocker retries and extra features |
 
-## SDKs and CLI
+### ScrapeApiResponse
 
-The Python SDK (`pip install scrapfly-sdk`, `ScrapeConfig`), the TypeScript, Go
-and Rust SDKs and the `scrapfly scrape` command take the same parameters. Their
-skills: https://github.com/scrapfly/skills
+```python
+response = client.scrape(ScrapeConfig(url="https://httpbin.dev"))
+
+response.content                      # Page content (HTML/JSON/text)
+response.scrape_result                # Full result dict
+response.status_code                  # Scrapfly API HTTP status code
+response.scrape_result["status_code"] # Upsteam HTTP status code
+response.headers                      # Response headers
+response.context                      # Metadata about features used
+```
+
+## Examples
+
+### Basic scrape
+
+```python
+from scrapfly import ScrapflyClient, ScrapeConfig
+import os
+
+client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
+
+result = client.scrape(ScrapeConfig(
+    url="https://httpbin.dev",
+))
+print(result.content)
+```
+
+### Scrape with anti-bot bypass and geo-targeting
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://httpbin.dev",
+    unblocker=True, # enable the unblocker to bypass antibots
+    country="us", # match the proxy with the domain country
+    proxy_pool="public_residential_pool", # use the residential proxy pool to match real ISP IPs
+))
+```
+
+### Scrape with JavaScript rendering
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/products",
+    render_js=True, # enable JavaScript rendering using a cloud browser
+    rendering_wait=5000, # rendering wait for wait for
+    wait_for_selector="div.product", # wait a for a selector to be present on the page
+))
+```
+
+### Scrape as markdown
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/products",
+    format="markdown", # other supported formats are: json, text, clean_html
+))
+print(result.content)
+```
+
+### POST request with body
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://httpbin.dev/anything",
+    method="POST",
+    headers={"Content-Type": "application/json"},
+    body='{"query": "search term"}',
+))
+print(result.content)
+```
+
+### JavaScript scenario (browser actions)
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/login",
+    render_js=True,
+    # browser control
+    js_scenario=[
+        {
+            "fill":{
+                "selector":"input[name='username']","clear":True,"value":"user123"
+                }
+            },{
+            "fill":{
+                "selector":"input[name='password']","clear":True,"value":"password"
+                }
+            },{
+            "click":{
+                "selector":"form > button[type='submit']"
+                }
+            },{
+            "wait_for_navigation":{
+                "timeout":5000
+                }
+            }
+    ],
+    # request headers
+    headers={
+        "cookie":"cookiesAccepted=true"
+    }
+))
+
+# access the element under login
+print(result.selector.css("div#secret-message::text").get())
+```
+
+# Built-in Parsel selector
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/products",
+    render_js=True
+))
+
+# access the built-in Parsel selector
+selector = result.selector
+for product in selector.css("div.product"):
+    print("product name:", product.xpath(".//a/text()").get()) # using xpath
+    print("product price:", product.css("div.price::text").get()) # using css
+```
+
+### Concurrent scraping
+
+```python
+import asyncio
+from scrapfly import ScrapflyClient, ScrapeConfig
+
+client = ScrapflyClient(key=os.environ["SCRAPFLY_API_KEY"])
+
+urls = [
+    "https://web-scraping.dev/products",
+    "https://web-scraping.dev/products?page=2",
+    "https://web-scraping.dev/products?page=3",
+]
+
+configs = [ScrapeConfig(url=url) for url in urls]
+
+async def concurrent_scraping():
+    results = []
+    async for result in client.concurrent_scrape(configs):
+        results.append(result)
+
+    for result in results:
+        print(result.content[:100])
+        print("===========")
+
+asyncio.run(concurrent_scraping())
+```
+
+### Using sessions for stateful scraping
+
+```python
+# First request: login
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/login",
+    render_js=True,
+    # browser control
+    js_scenario=[
+        {
+            "fill":{
+                "selector":"input[name='username']","clear":True,"value":"user123"
+                }
+            },{
+            "fill":{
+                "selector":"input[name='password']","clear":True,"value":"password"
+                }
+            },{
+            "click":{
+                "selector":"form > button[type='submit']"
+                }
+            },{
+            "wait_for_navigation":{
+                "timeout":5000
+                }
+            }
+    ],
+    # request headers
+    headers={
+        "cookie":"cookiesAccepted=true"
+    },
+    session="logged-in-session"
+))
+
+# Second request: access protected page with same session
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev/login",
+    session="logged-in-session"
+))
+
+# access the built-in selector
+print(result.selector.css("div#secret-message::text").get())
+```
+
+### Caching responses
+
+```python
+result = client.scrape(ScrapeConfig(
+    url="https://web-scraping.dev",
+    cache=True,
+    cache_ttl=3600,  # Cache for 1 hour
+))
+```
+
+## Error Handling
+
+```python
+from scrapfly import ScrapflyClient, ScrapeConfig
+from scrapfly.errors import (
+    ScrapflyError,
+    UpstreamHttpClientError,
+    UpstreamHttpServerError,
+    ScrapflyProxyError,
+    ScrapflyThrottleError,
+)
+
+try:
+    result = client.scrape(ScrapeConfig(url="https://httpbin.dev", unblocker=True))
+except ScrapflyThrottleError as e:
+    print(f"Rate limited, retry after {e.retry_delay}s")
+except UpstreamHttpClientError as e:
+    print(f"Target returned 4xx: {e.message}")
+except UpstreamHttpServerError as e:
+    print(f"Target returned 5xx: {e.message}")
+except ScrapflyProxyError as e:
+    print(f"Proxy error: {e.message}")
+except ScrapflyError as e:
+    print(f"Scrapfly error: {e.message}")
+```
+
+## Important Notes
+- `render_js=True` is required for `rendering_wait`, `wait_for_selector`, `js`, `js_scenario`, and `screenshots`
+- `proxy_pool="public_residential_pool"` is recommended when using `unblocker=True`
+- `unblocker` is the current name for the anti-bot bypass; `asp` is the deprecated alias and keeps working forever. Only the name changed; the SDK sends `asp` on the wire either way. Do not pass both
+- Use `format="markdown"` for clean content accessible for LLMs
+- Use `session` parameter to maintain state across multiple requests
+- The `concurrent_scrape` method handles rate limiting automatically
+
+## Claude Code rules
+
+Pick the MCP tool before scraping: `web_get_page` for a straightforward read,
+`web_scrape` for rendering, proxy pools, countries, headers, cookies, scenarios,
+cache and extraction. Keep `render_js: false` for a static page and use the
+Unblocker only when the target needs it. Prefer the cheaper stateless scrape to
+a Cloud Browser session.
+
+The result includes `api_cost` and `cost_details`. Report them, and report
+errors with their `ERR::...` code, `retryable` flag and documentation link.

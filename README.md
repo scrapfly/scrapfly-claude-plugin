@@ -103,6 +103,27 @@ needs. Claude treats fetched content as data, not as instructions. Use of
 Scrapfly is subject to its [terms of service](https://scrapfly.io/terms-of-service)
 and [privacy policy](https://scrapfly.io/privacy-policy).
 
+## Skill synchronization
+
+The four product skills (`web-scraping-api`, `screenshot-api`, `extraction-api`
+and `cloud-browser`) are generated from
+[`scrapfly/skills`](https://github.com/scrapfly/skills), their golden source.
+The `scrapfly` and `mcp-server` skills, commands, plugin configuration and the
+small Claude-specific rules in `scripts/skill-overrides/` are maintained here.
+The hourly sync workflow also runs after a change to its script and can be
+started manually with **Run workflow**. It validates the plugin and publishes
+only when a product skill changed.
+
+To run the sync and its tests locally:
+
+```bash
+python3 -m unittest discover -s scripts/tests -t scripts/tests
+python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out .
+
+# Report drift without changing the plugin
+python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out . --check
+```
+
 ## Development
 
 ```bash

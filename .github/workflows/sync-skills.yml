@@ -42,7 +42,7 @@ jobs:
         run: python3 -m unittest discover -s scripts/tests -t scripts/tests
       - name: Sync from the golden source
         working-directory: plugin
-        run: python3 scripts/sync-skills.py --skills ../skills-source --out .
+        run: python3 scripts/sync-skills.py --skills ../skills-source --out plugin
       - name: Guard against internal references
         working-directory: plugin
         run: |
@@ -62,7 +62,7 @@ jobs:
         working-directory: plugin
         run: |
           npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
-          claude plugin validate . --strict --profile directory
+          claude plugin validate plugin --strict --profile directory
       - name: Publish the synchronized skills
         if: steps.changes.outputs.changed == 'true'
         working-directory: plugin

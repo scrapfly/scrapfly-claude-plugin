@@ -6,7 +6,7 @@ screenshot, extract structured data with AI, and drive a cloud browser.
 
 It adds:
 
-- **Scrapfly's hosted MCP server** (`.mcp.json`): scraping, screenshots, Cloud
+- **Scrapfly's hosted MCP server** (`plugin/.mcp.json`): scraping, screenshots, Cloud
   Browser sessions and page interaction, WebMCP, monitoring, alerts,
   documentation search and account tools.
 - **Six skills** that pick the right product for a task and know its
@@ -118,17 +118,17 @@ To run the sync and its tests locally:
 
 ```bash
 python3 -m unittest discover -s scripts/tests -t scripts/tests
-python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out .
+python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out plugin
 
 # Report drift without changing the plugin
-python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out . --check
+python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out plugin --check
 ```
 
 ## Development
 
 ```bash
-claude plugin validate . --strict --profile directory
-claude --plugin-dir .
+claude plugin validate plugin --strict --profile directory
+claude --plugin-dir plugin
 ```
 
 ## Links

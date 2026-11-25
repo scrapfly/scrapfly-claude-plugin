@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "scrapfly": {
+      "type": "http",
+      "url": "https://mcp.scrapfly.io/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SCRAPFLY_API_KEY}"
+      }
+    }
+  }
+}

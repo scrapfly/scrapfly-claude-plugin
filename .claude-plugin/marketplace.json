@@ -1,0 +1,24 @@
+{
+  "name": "scrapfly",
+  "description": "The Scrapfly plugin for Claude Code.",
+  "owner": {
+    "name": "Scrapfly",
+    "url": "https://scrapfly.io"
+  },
+  "plugins": [
+    {
+      "name": "scrapfly",
+      "source": "./",
+      "description": "Web data for Claude Code: scrape pages, capture screenshots, extract structured data with AI, crawl websites and drive cloud browsers with Scrapfly.",
+      "category": "data",
+      "tags": [
+        "web-scraping",
+        "screenshot",
+        "extraction",
+        "crawler",
+        "cloud-browser",
+        "mcp"
+      ]
+    }
+  ]
+}

@@ -76,9 +76,10 @@ Read `is_finished` first: true when the crawl ended, for whatever reason. Then
   URLs waiting for a retry were left), `no_more_urls`;
 - a limit was reached: `page_limit`, `max_api_credit`, `max_duration_reached`;
 - failed: `seed_url_failed` (the first URL failed), `crawler_error` (see
-  Errors), `target_not_allowed`, `webhook_not_found`, `storage_error`,
-  `internal_error`, `worker_interrupted`;
-- `user_cancelled`.
+  Errors), `target_not_allowed`, `webhook_not_found`, `storage_error`;
+- `user_cancelled`;
+- paused: `worker_interrupted` or `internal_error` while `is_finished` is false,
+  and the crawl resumes by itself.
 
 Poll every 10 to 30 seconds until `is_finished`. To stop early:
 `curl -X POST "https://api.scrapfly.io/crawl/$CRAWL_UUID/cancel?key=$SCRAPFLY_API_KEY"`.

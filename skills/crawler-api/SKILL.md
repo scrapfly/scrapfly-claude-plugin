@@ -69,14 +69,17 @@ curl "https://api.scrapfly.io/crawl/$CRAWL_UUID/status?key=$SCRAPFLY_API_KEY"
 ```
 
 Read `is_finished` first: true when the crawl ended, for whatever reason. Then
-`is_success` says how it went. `state` counts `urls_visited`, `urls_failed`,
-`urls_to_crawl` and `api_credit_used`, and its `stop_reason` is information:
+read `stop_reason` in `state`, next to the counts `urls_visited`, `urls_failed`,
+`urls_to_crawl` and `api_credit_used`. `is_success` is false only for a crawl
+that got nothing: a crawl stopped by an error or a limit after visiting pages
+keeps them and reads `is_success: true`.
 
 - ended by itself: `backlog_empty` (the usual end), `retry_backlog_only` (only
   URLs waiting for a retry were left), `no_more_urls`;
 - a limit was reached: `page_limit`, `max_api_credit`, `max_duration_reached`;
-- failed: `seed_url_failed` (the first URL failed), `crawler_error` (see
-  Errors), `target_not_allowed`, `webhook_not_found`, `storage_error`;
+- an error stopped it: `crawler_error` (see Errors);
+- failed, `is_success` false: `seed_url_failed` (no page visited),
+  `target_not_allowed`, `webhook_not_found`, `storage_error`;
 - `user_cancelled`;
 - paused: `worker_interrupted` or `internal_error` while `is_finished` is false,
   and the crawl resumes by itself.
@@ -193,7 +196,7 @@ Keep `respect_robots_txt` on and set a `delay` for small sites.
 | Code or stop reason | Meaning | What to do |
 |---|---|---|
 | `ERR::CRAWLER::CONFIG_ERROR` | The configuration is invalid (400), or over a limit such as 5000 pages | Read the message, fix the field |
-| `crawler_error` | Most recent scrapes failed on the Unblocker or an internal error, or the account hit a fatal error such as its quota or a suspension | Check the credits with `info_account`, then scrape one failing URL with `web_scrape` to see why. Choose the options for that page: `rendering_delay` when JavaScript builds it, `country` for a page of one country, `unblocker` for a page that needs residential proxies and a real browser |
+| `crawler_error` | Most recent scrapes failed on the Unblocker or an internal error, or the account hit a fatal error such as its quota or a suspension. The pages visited before are kept, and `is_success` is true when there are any | Check the credits with `info_account`, then scrape one failing URL with `web_scrape` to see why. Choose the options for that page: `rendering_delay` when JavaScript builds it, `country` for a page of one country, `unblocker` for a page that needs residential proxies and a real browser |
 | `seed_url_failed` | The first URL failed, nothing was visited | Check the URL with `web_scrape` |
 | `max_api_credit` | The crawl's own budget ran out | Raise the budget, or crawl fewer pages |
 

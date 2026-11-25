@@ -18,6 +18,11 @@ The plugin sends `SCRAPFLY_API_KEY` from the environment as
 https://scrapfly.io/dashboard/project. Claude Code reads the variable when it
 starts, so a key set afterwards needs a restart.
 
+To set it up or check it, run `/scrapfly:setup`. Never ask the user to paste the
+key into the conversation, and never print it or write it to a file: the user
+exports it in their own shell (`export SCRAPFLY_API_KEY=...`) or adds it to
+their shell profile.
+
 The hosted server also accepts an OAuth sign-in in the browser, with no key in
 the environment. Claude Code does not fall back to OAuth for a server that sends
 an `Authorization` header, so for OAuth add the server on its own and disable
@@ -41,7 +46,7 @@ the authority for its parameters.
 | Cloud Browser | `cloud_browser_open`, `browser_unblock`, `cloud_browser_navigate`, `cloud_browser_sessions`, `cloud_browser_close`, `cloud_browser_screenshot`, `cloud_browser_eval`, `cloud_browser_downloads`, `cloud_browser_performance` |
 | Page interaction | `take_snapshot`, `take_screenshot`, `find_elements`, `get_page_url`, `evaluate_script`, `click`, `hover`, `drag`, `fill`, `type_text`, `press_key`, `select_option`, `dropdown_options`, `scroll`, `scroll_to_text`, `go_back`, `wait` |
 | WebMCP | `list_webmcp_tools`, `call_webmcp_tool` |
-| Credential vaults | `cloud_browser_vault_*`: logins the browser fills in |
+| Credential vaults | `cloud_browser_vault_*`: manage credential vaults. A vault key, a password or a token passed to them stays in the conversation, so create and fill a vault from the dashboard |
 | Monitoring | `monitoring_get_metrics`, `monitoring_get_target_metrics`: success rate, errors and cost per product, project or website |
 | Alerts | `alert_metric_families`, `alert_preview`, `alert_create`, `alert_list`, `alert_get`, `alert_update`, `alert_delete`, `alert_series`, `alert_test`, `alert_snooze`, `alert_unsnooze`, `alert_count_active` |
 | Documentation | `docs_search`: Scrapfly's documentation, by product |

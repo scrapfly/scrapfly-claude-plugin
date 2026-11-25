@@ -1,6 +1,6 @@
 ---
 name: extraction-api
-description: Turn a web page or a document into structured data with Scrapfly's Extraction API - an LLM prompt, a predefined AI model (product, article, review_list, job_posting and more) or an extraction template of selectors - on a URL through the MCP tool web_scrape, or on HTML, markdown, text or XML already at hand through the HTTP API. Costs and error codes. Use for "extract the products from", "get the price and name as JSON", "parse this HTML into fields".
+description: Load first for any request to extract, parse or get structured data (names, prices, a list, fields, JSON, a table) from a web page or a document, before fetching it ("extract the products from", "get the price and name as JSON", "parse this HTML into fields"). Covers Scrapfly's Extraction API on a URL through the MCP tool web_scrape, or on HTML, markdown, text or XML at hand over HTTP: an LLM prompt, a predefined AI model (product, article, review_list, job_posting and more) or a template of selectors, their costs and error codes.
 user-invocable: false
 ---
 
@@ -28,14 +28,21 @@ Models: `article`, `event`, `food_recipe`, `hotel`, `hotel_listing`,
 
 `web_scrape` with `extraction_prompt` or `extraction_model` (`web_get_page`
 takes `extraction_model`) fetches the page and extracts in one call. The result
-is in `extraction_result`; the cost is the scrape's plus the extraction's. When
-the page is short and the fields are few, reading the markdown yourself costs
-no extraction credits.
+is in `extraction_result`; the cost is the scrape's plus the extraction's.
+`web_scrape` renders by default: set `render_js: false` for a static page (5
+credits less). When the page is short and the fields are few, reading the
+markdown yourself costs no extraction credits.
+
+With an extraction, `web_scrape` always uses the Unblocker, whatever `unblocker`
+says, so the scrape can move to a residential proxy and a browser and cost more.
+To extract without it, scrape with `unblocker: false`, then read the content
+yourself or send it to the HTTP API below; or call the HTTP scrape API, where the
+Unblocker is off unless asked for.
 
 ```json
 {
   "url": "https://web-scraping.dev/product/1",
-  "render_js": true,
+  "render_js": false,
   "extraction_model": "product"
 }
 ```
@@ -44,20 +51,23 @@ no extraction credits.
 
 `POST https://api.scrapfly.io/extraction` with the document as the body, its
 type in the `Content-Type` header (`text/html`, `text/markdown`, `text/plain`,
-`text/xml`), and one method in the query string, URL-encoded:
+`text/xml`), and one method in the query string, which `curl` encodes
+(`--url-query` needs curl 7.87 or newer). The prompt comes from a file:
 
 ```bash
-curl -X POST "https://api.scrapfly.io/extraction?key=$SCRAPFLY_API_KEY&extraction_model=product" \
-  -H "Content-Type: text/html" \
-  --data-binary @product.html
+curl -X POST "https://api.scrapfly.io/extraction?key=$SCRAPFLY_API_KEY" \
+  --url-query 'extraction_model=product' \
+  -H "Content-Type: text/html" --data-binary @product.html
 
-curl -X POST "https://api.scrapfly.io/extraction?key=$SCRAPFLY_API_KEY&extraction_prompt=Extract+the+product+name+and+price+as+JSON" \
-  -H "Content-Type: text/html" \
-  --data-binary @product.html
+# a prompt, written in prompt.txt
+curl -X POST "https://api.scrapfly.io/extraction?key=$SCRAPFLY_API_KEY" \
+  --url-query 'extraction_prompt@prompt.txt' \
+  -H "Content-Type: text/html" --data-binary @product.html
 ```
 
-The answer is `{"content_type": ..., "data": ...}`. Other parameters: `url`
-(the page's address, which resolves relative links), `charset` (`auto` by
+The answer is `{"content_type": ..., "data": ...}`. Other parameters: `url`, the
+page's address, which resolves relative links
+(`--url-query 'url=https://web-scraping.dev/product/1'`), `charset` (`auto` by
 default), `timeout` in seconds (60 to 155), `webhook_name`. A gzip, zstd or
 deflate body is accepted with its `Content-Encoding` header.
 
@@ -65,8 +75,16 @@ deflate body is accepted with its `Content-Encoding` header.
 
 A template lists selectors (`css`, `xpath`, `jmespath`, `regex`, nested
 selectors), extractors (`price`, `image`, `links`, `emails`) and formatters
-(`trim`, `lowercase`, `uppercase`, `datetime`, `absolute_url`, `unique`). Pass a template saved in the dashboard
-by its name, or one defined inline as `ephemeral:<base64 of the JSON>`:
+(`trim`, `lowercase`, `uppercase`, `datetime`, `absolute_url`, `unique`). Pass a
+template saved in the dashboard by its name, or an inline one as
+`ephemeral:<base64 of the JSON>`:
+
+```bash
+printf 'ephemeral:%s' "$(base64 < template.json | tr -d '\n')" > template.txt
+curl -X POST "https://api.scrapfly.io/extraction?key=$SCRAPFLY_API_KEY" \
+  --url-query 'extraction_template@template.txt' \
+  -H "Content-Type: text/html" --data-binary @product.html
+```
 
 ```json
 {

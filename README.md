@@ -65,7 +65,8 @@ Then run `/reload-plugins` or start a new session.
    export SCRAPFLY_API_KEY="your-api-key"
    ```
 
-3. Restart Claude Code and run `/scrapfly:setup`.
+3. Restart Claude Code and run `/scrapfly:setup`. Until the key is set, `/mcp`
+   shows the plugin's server as failed.
 
 The MCP server receives the key as an `Authorization: Bearer` header, and the
 crawl and document extraction calls pass it to the Scrapfly API from the
@@ -110,7 +111,7 @@ Every call is billed in API credits of your plan: a scrape through a datacenter
 proxy costs 1 credit, JavaScript rendering 5 more, a residential proxy 25, a
 screenshot 60, an extraction 1 to 5, and a Cloud Browser session its time and
 bandwidth. The skills give Claude the full table, Claude reports what each call
-cost, and it asks before a crawl or a batch that can spend many credits. See
+cost, and it asks before work expected to cost more than 100 credits. See
 [pricing](https://scrapfly.io/pricing) and the
 [billing documentation](https://scrapfly.io/docs/scrape-api/billing).
 
@@ -127,7 +128,11 @@ and [privacy policy](https://scrapfly.io/privacy-policy).
 ```bash
 claude plugin validate .
 claude --plugin-dir .
+scripts/run-evals.sh
 ```
+
+The evals run Claude on the plugin with stubbed tools, so they need a Claude
+credential and no Scrapfly key. They cost a few cents.
 
 ## Links
 

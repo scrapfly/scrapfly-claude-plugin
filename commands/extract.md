@@ -17,9 +17,11 @@ Follow the `scrapfly:extraction-api` skill.
    kind, otherwise an `extraction_prompt` written from the request, asking for
    JSON. Without any description of what to extract, use the model that fits the
    page, or ask.
-3. A URL: call `web_scrape` with the method (`render_js: true` for a page built
-   by JavaScript) and read `extraction_result`. A local file: send it to the
-   Extraction API with `curl`, as the skill shows, with the key from
+3. A URL: call `web_scrape` with the method (`render_js: false` for a static
+   page: rendering is on by default and costs 5 credits) and read
+   `extraction_result`. The Unblocker is on for any extraction, so the scrape
+   can cost more. A local file: send it to the Extraction API with `curl`, as the
+   skill shows, with the prompt written in a file, the key from
    `$SCRAPFLY_API_KEY` and the file's content type.
 4. Return the data as JSON, with the source and the credits the calls cost.
 

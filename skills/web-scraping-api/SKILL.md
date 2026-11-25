@@ -1,6 +1,6 @@
 ---
 name: web-scraping-api
-description: Fetch the content of a URL with Scrapfly's Web Scraping API through the MCP tools web_get_page and web_scrape, or the HTTP API - JavaScript rendering, proxy pool and country, the Unblocker, headers, cookies, POST bodies, browser scenarios, cache, output formats, costs and error codes. Use for "scrape this URL", "get this page", "fetch the JSON at", "read this site in markdown".
+description: Load first for any request to scrape, fetch or read the content of a URL ("scrape this page", "get this page", "fetch the JSON at", "read this site in markdown"), before calling web_get_page or web_scrape. Covers Scrapfly's Web Scraping API: which tool and settings cost least, JavaScript rendering, proxy pool and country, the Unblocker, headers, cookies, POST bodies, browser scenarios, cache, output formats and error codes.
 user-invocable: false
 ---
 
@@ -25,8 +25,8 @@ https://scrapfly.io/docs/scrape-api/getting-started
 ```bash
 curl -G https://api.scrapfly.io/scrape \
   --data-urlencode "key=$SCRAPFLY_API_KEY" \
-  --data-urlencode "url=https://web-scraping.dev/products" \
-  --data-urlencode "format=markdown"
+  --data-urlencode 'url=https://web-scraping.dev/products' \
+  --data-urlencode 'format=markdown'
 ```
 
 The JSON answer holds the content in `result.content`, the website's status in
@@ -41,8 +41,8 @@ The JSON answer holds the content in `result.content`, the website's status in
    Unblocker on. It has no flat fee, but it can move the request to a
    residential proxy and a browser, which raises the cost; `cost_budget` (HTTP
    API) caps what one scrape may cost.
-4. `proxy_pool: public_residential_pool` costs 25 credits instead of 1. Use it
-   only when the datacenter pool does not get the page.
+4. `proxy_pool: public_residential_pool` costs 25 credits instead of 1: use it for
+   a page that needs residential proxies.
 5. `cache: true` serves a repeat within `cache_ttl` seconds (86400 by default)
    for 1 credit.
 
@@ -54,7 +54,7 @@ The JSON answer holds the content in `result.content`, the website's status in
 |---|---|
 | `url` | The page to fetch, `http://` or `https://` |
 | `format` | `markdown`, `text`, `clean_html`, `json` or `raw`; options `no_links`, `no_images`, `only_content` for markdown and text |
-| `render_js` | Load the page in a browser (+5 credits) |
+| `render_js` | Load the page in a browser (+5 credits): on by default on `web_scrape`, off on the HTTP API; set it to `false` for a static page |
 | `rendering_wait` | Milliseconds to wait after the page loads (1000 by default with a browser) |
 | `wait_for_selector` | A CSS or XPath selector to wait for, 15 seconds at most |
 | `js` | JavaScript to run in the page before the content is read |
@@ -65,8 +65,8 @@ The JSON answer holds the content in `result.content`, the website's status in
 | `lang` | Page languages, sent as `Accept-Language` |
 | `method`, `body`, `headers`, `cookies` | The request itself: `GET` by default, `POST`, `PUT`, `PATCH`, `OPTIONS`, `HEAD` |
 | `cache`, `cache_ttl`, `cache_clear` | Serve and refresh from Scrapfly's cache |
-| `retry`, `timeout` | Retries on transient errors (on by default); a custom `timeout` (milliseconds, 150000 at most) needs `retry: false` |
-| `extraction_prompt`, `extraction_model` | Structured data from the page: see `scrapfly:extraction-api` |
+| `retry`, `timeout` | Retries on transient errors (on by default). A custom `timeout` (milliseconds, 150000 at most) needs `retry: false` and, on `web_scrape`, `unblocker: false`: with the Unblocker on, or a retry, the API sets the timeout itself and drops yours |
+| `extraction_prompt`, `extraction_model` | Structured data from the page: see `scrapfly:extraction-api`. They turn the Unblocker on whatever `unblocker` says |
 | `screenshots`, `screenshot_flags` | Images taken during the scrape, billed with the scrape |
 | `session` (HTTP API) | Keeps cookies and the proxy between scrapes of a multi-step flow |
 | `tags`, `correlation_id` (HTTP API) | Labels to find the scrapes in the monitoring dashboard |
@@ -83,9 +83,9 @@ page at `https://scrapfly.io/docs/scrape-api/error/<code>`.
 
 | Code | Meaning | What to do |
 |---|---|---|
-| `ERR::SCRAPE::BAD_UPSTREAM_RESPONSE` | The website answered with a status of 400 or more | A 404 or 410 is the website's own answer. A 403, 429 or 5xx is not billed while the account has Scrape Failed Protection: such a page needs the Unblocker (on by default), `render_js`, a `country` near the website, or `public_residential_pool` |
-| `ERR::ASP::SHIELD_PROTECTION_FAILED` | The Unblocker did not get the page this time | Retry later, with a `country`; contact support with the scrape's log if it persists |
-| `ERR::SCRAPE::OPERATION_TIMEOUT` | An operation took too long (504, retryable) | Retry; lighten the scenario or the wait, or raise `timeout` with `retry: false` |
+| `ERR::SCRAPE::BAD_UPSTREAM_RESPONSE` | The website answered with a status of 400 or more | A 404 or 410 is the website's own answer. Otherwise check the URL, the method, the headers and the cookies, then read the code's page; a 403, 429 or 5xx is not billed while the account has Scrape Failed Protection |
+| `ERR::ASP::SHIELD_PROTECTION_FAILED` | The Unblocker did not get the page this time | Check the URL and retry later; contact support with the scrape's log if it persists |
+| `ERR::SCRAPE::OPERATION_TIMEOUT` | An operation took too long (504, retryable) | Retry; lighten the scenario or the wait; with `unblocker: false`, raise `timeout` with `retry: false` |
 | `ERR::SCRAPE::DOM_SELECTOR_NOT_FOUND` | `wait_for_selector` did not appear within 15 seconds (billed) | Check the selector against the rendered content returned |
 | `ERR::SCRAPE::CONFIG_ERROR` | A parameter is invalid (400) | Read the message, fix the parameter |
 | `ERR::SCRAPE::DNS_NAME_NOT_RESOLVED` | The domain does not resolve | Check the URL |

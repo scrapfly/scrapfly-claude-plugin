@@ -1,6 +1,6 @@
 ---
 name: screenshot-api
-description: Capture an image of a web page or of one element with Scrapfly's Screenshot API through the MCP tool screenshot or the HTTP API - format, full page or selector capture, resolution, country, waits, banner blocking, dark mode, accessibility simulations, costs and error codes. Use for "screenshot this page", "capture the header of", "show me what this site looks like on mobile".
+description: Load first for any request to screenshot or capture a web page or one of its elements ("screenshot this page", "capture the header of", "show me what this site looks like on mobile"), before calling the MCP tool screenshot. Covers Scrapfly's Screenshot API: format, full page or selector capture, resolution, country, waits, banner blocking, dark mode, accessibility simulations, costs and error codes.
 user-invocable: false
 ---
 
@@ -18,9 +18,9 @@ https://scrapfly.io/docs/screenshot-api/getting-started
 ```bash
 curl -G https://api.scrapfly.io/screenshot \
   --data-urlencode "key=$SCRAPFLY_API_KEY" \
-  --data-urlencode "url=https://web-scraping.dev/product/1" \
-  --data-urlencode "capture=fullpage" \
-  --data-urlencode "format=png" \
+  --data-urlencode 'url=https://web-scraping.dev/product/1' \
+  --data-urlencode 'capture=fullpage' \
+  --data-urlencode 'format=png' \
   -o product.png
 ```
 

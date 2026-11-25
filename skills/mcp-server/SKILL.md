@@ -1,6 +1,6 @@
 ---
 name: mcp-server
-description: Scrapfly's hosted MCP server as this plugin connects it - authentication with SCRAPFLY_API_KEY or OAuth, the tool groups (scraping, screenshots, Cloud Browser, page interaction, WebMCP, credential vaults, monitoring, alerts, documentation search, account), what calls cost, permission rules, and how to fix a connection that fails. Use for "is Scrapfly connected", "how many credits do I have left", "which Scrapfly tools exist", "set up an alert on my success rate", or an MCP connection error.
+description: Scrapfly's hosted MCP server as this plugin connects it - OAuth sign-in, the tool groups (scraping, screenshots, Cloud Browser, page interaction, WebMCP, credential vaults, monitoring, alerts, documentation search, account), what calls cost, permission rules, and how to fix a connection that fails. Use for "is Scrapfly connected", "how many credits do I have left", "which Scrapfly tools exist", "set up an alert on my success rate", or an MCP connection error.
 user-invocable: false
 ---
 
@@ -11,28 +11,12 @@ HTTP), listed as `plugin:scrapfly:scrapfly` in `/mcp`. Its tools appear as
 `mcp__plugin_scrapfly_scrapfly__<tool>`. Documentation:
 https://scrapfly.io/docs/mcp/getting-started
 
-## Authentication
+## Sign-in
 
-The plugin sends `SCRAPFLY_API_KEY` from the environment as
-`Authorization: Bearer <key>`. The key is on the dashboard:
-https://scrapfly.io/dashboard/project. Claude Code reads the variable when it
-starts, so a key set afterwards needs a restart.
-
-To set it up or check it, run `/scrapfly:setup`. Never ask the user to paste the
-key into the conversation, and never print it or write it to a file: the user
-exports it in their own shell (`export SCRAPFLY_API_KEY=...`) or adds it to
-their shell profile.
-
-The hosted server also accepts an OAuth sign-in in the browser, with no key in
-the environment. Claude Code does not fall back to OAuth for a server that sends
-an `Authorization` header, so for OAuth add the server on its own and disable
-the plugin's in `/mcp`:
-
-```bash
-claude mcp add --transport http scrapfly-oauth https://mcp.scrapfly.io/mcp
-```
-
-then run `/mcp`, select it and sign in. https://scrapfly.io/docs/mcp/authentication
+The server uses OAuth: the first tool call, or selecting the server in `/mcp`,
+opens the browser to sign in to Scrapfly and pick a project. No API key is
+stored in the plugin or the environment. Never ask the user for a key, a
+password or a token. https://scrapfly.io/docs/mcp/authentication
 
 ## Tools
 
@@ -54,7 +38,7 @@ the authority for its parameters.
 The product skills say when to use each: `scrapfly:web-scraping-api`,
 `scrapfly:screenshot-api`, `scrapfly:extraction-api`, `scrapfly:cloud-browser`.
 The Crawler API and the extraction of a document already at hand have no tool:
-`scrapfly:crawler-api` and `scrapfly:extraction-api` call the HTTP API.
+link their documentation.
 
 ## Alerts: preview before you create
 
@@ -63,7 +47,7 @@ Ground a threshold in the account's own numbers:
 for the baseline, `alert_metric_families` for a valid `metric_id`,
 `alert_preview` to count how often the rule would have fired, then
 `alert_create` without `confirm` to show the dry run, and with `confirm: true`
-once the user agrees. Leave `project_uuid` empty: the key's project is used.
+once the user agrees. Leave `project_uuid` empty: the signed-in project is used.
 
 ## Cost
 
@@ -83,8 +67,8 @@ settings.
 
 | `/mcp` or `claude mcp list` shows | Cause | Fix |
 |---|---|---|
-| `Failed to connect`, HTTP 401 | `SCRAPFLY_API_KEY` is not set in Claude Code's environment, or the key is wrong | `export SCRAPFLY_API_KEY=...` in the shell that starts Claude Code, then restart it; `/scrapfly:setup` checks it |
-| `network unauthorized`, `Access restricted by your project` | The key's project only accepts some IP addresses | Allow the address the message names in the project settings (Security & Access), or clear the list |
+| `Needs authentication`, HTTP 401 | Not signed in, or the sign-in expired | Select the server in `/mcp` and sign in again |
+| `network unauthorized`, `Access restricted by your project` | The project only accepts some IP addresses | Allow the address the message names in the project settings (Security & Access), or clear the list |
 | Tools missing | The server is disabled in `/mcp`, or the plugin is | Enable it in `/mcp`, `/plugin` |
 
 The server is open source, and can also run on your own machine:

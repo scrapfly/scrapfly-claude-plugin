@@ -1,27 +1,21 @@
 ---
-description: Set up or check the Scrapfly API key and connection - whether SCRAPFLY_API_KEY is set, whether the MCP server answers, the plan and the credits left. Use for "set up my Scrapfly key", "connect Scrapfly", "is Scrapfly working". Never asks for the key in the conversation.
+description: Set up or check the Scrapfly connection - whether the MCP server is signed in, the plan and the credits left. Use for "connect Scrapfly", "is Scrapfly working", "how many credits do I have". Never asks for a key or a password.
 ---
 
 # Scrapfly setup
 
-Check the connection to Scrapfly, step by step, without ever printing the key.
-Never ask for the key in the conversation.
+Check the connection to Scrapfly. Never ask for an API key, a password or a
+token.
 
-1. Run `test -n "$SCRAPFLY_API_KEY" && echo "SCRAPFLY_API_KEY is set" || echo "SCRAPFLY_API_KEY is not set"`.
-   When the shell is not available, go to step 2.
-2. Call `info_account` on a connected Scrapfly MCP server. When it answers, the
-   connection works: report the plan, the credits used and left, and the
-   concurrency limit. When the variable is not set, the connection is an OAuth
-   sign-in: say so, and that only crawls and extraction of a file need
-   `SCRAPFLY_API_KEY`.
-3. When no Scrapfly tool answers: if the variable is not set, tell the user to
-   get a key at https://scrapfly.io/dashboard/project, to add
-   `export SCRAPFLY_API_KEY=<their key>` to the profile of the shell that starts
-   Claude Code, to restart Claude Code and to run `/scrapfly:setup` again, or to
-   sign in with OAuth as the `scrapfly:mcp-server` skill shows. If the variable
-   is set, follow that skill's section "When the connection fails" and say which
-   case applies.
-4. List what the plugin adds: `/scrapfly:scrape`, `/scrapfly:screenshot`,
-   `/scrapfly:extract`, `/scrapfly:crawl`, and plain requests ("scrape
+1. Call `info_account`. When it answers, the connection works: report the plan,
+   the credits used and left, and the concurrency limit.
+2. When it asks for authentication or no Scrapfly tool answers, tell the user to
+   run `/mcp`, select `plugin:scrapfly:scrapfly` and sign in to Scrapfly in the
+   browser (an account is free at https://scrapfly.io/register), then run
+   `/scrapfly:setup` again. For any other error, follow the
+   `scrapfly:mcp-server` skill's section "When the connection fails" and say
+   which case applies.
+3. List what the plugin adds: `/scrapfly:scrape`, `/scrapfly:screenshot`,
+   `/scrapfly:extract`, and plain requests ("scrape
    https://web-scraping.dev/products", "screenshot this page") that the skills
    route to the right Scrapfly product.

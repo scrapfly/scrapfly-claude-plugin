@@ -2,7 +2,7 @@
   "name": "scrapfly",
   "displayName": "Scrapfly",
   "version": "1.0.0",
-  "description": "Web data for Claude Code: scrape pages, capture screenshots, extract structured data with AI, crawl websites and drive cloud browsers with Scrapfly, through its hosted MCP server and its API.",
+  "description": "Web data for Claude Code: scrape pages, capture screenshots, extract structured data with AI, and drive cloud browsers with Scrapfly, through its hosted MCP server.",
   "author": {
     "name": "Scrapfly",
     "url": "https://scrapfly.io"
@@ -15,7 +15,7 @@
     "web-scraping",
     "screenshot",
     "extraction",
-    "crawler",
+    
     "cloud-browser",
     "mcp"
   ],

@@ -41,9 +41,10 @@ https://github.com/scrapfly/skills (`npx skills add scrapfly/skills`).
 
 ## What it costs
 
-Every call is billed in API credits of the account's plan, and every result
-says what it cost: `api_cost` and `cost_details` in an MCP tool result, the
-`X-Scrapfly-Api-Cost` header on an HTTP response.
+Every call is billed in API credits of the account's plan. A scrape reports
+its cost in `api_cost` and `cost_details` of the MCP tool result, an HTTP
+response in its `X-Scrapfly-Api-Cost` header, a crawl in `api_credit_used`,
+and a Cloud Browser session on the dashboard page `cloud_browser_close` links.
 
 | Call | Credits |
 |---|---|

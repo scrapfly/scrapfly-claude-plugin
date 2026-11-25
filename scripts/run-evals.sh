@@ -14,13 +14,13 @@ RESULTS="${EVAL_RESULTS:-evals/results/ci}"
 
 mkdir -p "$RESULTS"
 
-# The suite with no baseline arm, once per case, on the small model, with a spending ceiling.
+# The suite with no baseline arm, once per case, on the small model, with a spending ceiling and stdin closed.
 evaluate() {
   local output="$1"
   shift
   claude plugin eval . --trust-plugin --ablation none --runs 1 --threshold 1.0 \
     --model "$MODEL" --judge-model "$JUDGE_MODEL" --no-publish --max-cost-usd 1 \
-    --concurrency 4 "$@" --json "$output"
+    --concurrency 4 "$@" --json "$output" < /dev/null
 }
 
 # The names of the cases below the threshold in a result file.

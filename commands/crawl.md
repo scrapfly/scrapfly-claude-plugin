@@ -27,8 +27,10 @@ to `/scrapfly:setup`.
    limit of the `scrapfly:scrapfly` skill, wait for the user's agreement. With
    `unblocker` on, say that the total can rise.
 4. Start the crawl and poll its status until `is_finished`, then read
-   `is_success`. List every visited URL in a file with the skill's loop, then
-   read their markdown through `contents/batch`, 100 URLs a call.
+   `is_success`. List every visited URL in a file with the skill's loop; an empty
+   list means no page was visited: say so and stop. Then read the pages through
+   `contents/batch`, 100 URLs a call, in the formats chosen in step 2, and with
+   `formats=extracted_data` when the crawl has extraction rules.
 5. Return what the request asked for: the pages, a summary, or the data
    collected, with the pages read, the pages that failed, the `stop_reason` and
    the credits used (`api_credit_used`).

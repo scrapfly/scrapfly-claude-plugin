@@ -126,7 +126,7 @@ and [privacy policy](https://scrapfly.io/privacy-policy).
 ## Development
 
 ```bash
-claude plugin validate .
+claude plugin validate . --strict --profile directory
 claude --plugin-dir .
 scripts/run-evals.sh
 ```

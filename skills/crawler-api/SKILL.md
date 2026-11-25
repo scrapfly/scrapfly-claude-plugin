@@ -104,16 +104,24 @@ while curl -sSf -G "https://api.scrapfly.io/crawl/$CRAWL_UUID/urls" \
 done
 ```
 
-Read the pages of that list, up to 100 in one call. The answer is multipart, one
-part per page with its URL in `Content-Location`, and the header
-`X-Scrapfly-Found-URLs` counts the pages found:
+An empty `urls.txt` means the crawl visited no page: say so and stop. Otherwise
+read the pages of the list, up to 100 in one call, in the formats the crawl
+stored: `formats` takes one of `content_formats` or several, comma-separated
+(`markdown,extracted_data`), and `extracted_data` returns the result of the
+extraction rules. The answer is multipart, one part per page and format with the
+page's URL in `Content-Location`, and the header `X-Scrapfly-Found-URLs` counts
+the pages found:
 
 ```bash
-split -l 100 urls.txt urls-part-
-for part in urls-part-*; do
-  curl -sSf -X POST "https://api.scrapfly.io/crawl/$CRAWL_UUID/contents/batch?key=$SCRAPFLY_API_KEY&formats=markdown" \
-    -H "Content-Type: text/plain" --data-binary @"$part" -o "contents-$part"
-done
+if [ -s urls.txt ]; then
+  split -l 100 urls.txt urls-part-
+  for part in urls-part-*; do
+    curl -sSf -X POST "https://api.scrapfly.io/crawl/$CRAWL_UUID/contents/batch?key=$SCRAPFLY_API_KEY&formats=markdown" \
+      -H "Content-Type: text/plain" --data-binary @"$part" -o "contents-$part"
+  done
+else
+  echo "The crawl visited no page"
+fi
 ```
 
 One page as plain markdown, here the first of the list:

@@ -99,7 +99,10 @@ cost, and it asks before work expected to cost more than 100 credits. See
 
 The URLs and options of each request go to Scrapfly, and the content Scrapfly
 fetches comes back into your Claude Code session: include only what the task
-needs. Claude treats fetched content as data, not as instructions. Use of
+needs. Besides the MCP server at `mcp.scrapfly.io`, code examples in the
+product skills call Scrapfly's HTTP API at `api.scrapfly.io` and its Cloud
+Browser at `browser.scrapfly.io`; those calls use your own API key and go only
+to Scrapfly. Claude treats fetched content as data, not as instructions. Use of
 Scrapfly is subject to its [terms of service](https://scrapfly.io/terms-of-service)
 and [privacy policy](https://scrapfly.io/privacy-policy).
 

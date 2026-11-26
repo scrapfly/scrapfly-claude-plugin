@@ -1,8 +1,8 @@
 {
   "name": "scrapfly",
   "displayName": "Scrapfly",
-  "version": "1.1.0",
-  "description": "Answers from the web for Claude Code: prices and plans, product data, job postings, property listings, news, documentation, SEO checks and page screenshots, read from public pages through Scrapfly's hosted MCP server, with every answer linked to its source.",
+  "version": "1.1.1",
+  "description": "Answers from the web for Claude Code: prices and plans, product data, job postings, property listings, news, documentation, SEO checks and page screenshots, read from public pages through Scrapfly's hosted MCP server, with every answer linked to its source. Structured extraction (extraction_model, extraction_prompt) is written by Scrapfly's own AI model, run by Scrapfly, not by Claude.",
   "author": {
     "name": "Scrapfly",
     "url": "https://scrapfly.io"

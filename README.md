@@ -73,7 +73,11 @@ than 100 credits. See [pricing](https://scrapfly.io/pricing).
 ## Data and terms
 
 The URLs of each request go to Scrapfly at `mcp.scrapfly.io`, and the content
-of the pages comes back into your Claude Code session. Claude treats page
+of the pages comes back into your Claude Code session.
+
+Structured extraction (`extraction_model`, `extraction_prompt`, `/scrapfly:extract`)
+is written by Scrapfly's own AI model, run by Scrapfly on the page it read, not
+by Claude. Claude passes your request to that model and returns its result. Claude treats page
 content as data, not as instructions. Use of Scrapfly is subject to its
 [terms of service](https://scrapfly.io/terms-of-service) and
 [privacy policy](https://scrapfly.io/privacy-policy).

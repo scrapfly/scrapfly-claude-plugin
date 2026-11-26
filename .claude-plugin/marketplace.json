@@ -9,7 +9,7 @@
     {
       "name": "scrapfly",
       "source": "./plugin",
-      "description": "Answers from the web: prices, products, jobs, listings, news, docs, SEO checks and screenshots, read from public pages with sources.",
+      "description": "Answers from the web: prices, products, jobs, listings, news, docs, SEO checks and screenshots, read from public pages with sources. Extraction is written by Scrapfly's own AI model.",
       "category": "data",
       "tags": [
         "web-data",

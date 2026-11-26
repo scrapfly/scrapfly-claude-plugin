@@ -1,8 +1,8 @@
 {
   "name": "scrapfly",
   "displayName": "Scrapfly",
-  "version": "1.0.0",
-  "description": "Web data for Claude Code: scrape pages, capture screenshots, extract structured data with AI, and drive cloud browsers with Scrapfly, through its hosted MCP server.",
+  "version": "1.1.0",
+  "description": "Answers from the web for Claude Code: prices and plans, product data, job postings, property listings, news, documentation, SEO checks and page screenshots, read from public pages through Scrapfly's hosted MCP server, with every answer linked to its source.",
   "author": {
     "name": "Scrapfly",
     "url": "https://scrapfly.io"
@@ -12,11 +12,15 @@
   "license": "MIT",
   "keywords": [
     "scrapfly",
-    "web-scraping",
+    "web-data",
+    "research",
+    "prices",
+    "jobs",
+    "real-estate",
+    "news",
+    "documentation",
+    "seo",
     "screenshot",
-    "extraction",
-    
-    "cloud-browser",
     "mcp"
   ],
   "icon": "./.claude-plugin/icon.png",

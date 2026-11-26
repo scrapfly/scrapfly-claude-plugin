@@ -1,36 +1,35 @@
 # Scrapfly plugin for Claude Code
 
-Web data for Claude Code. This plugin connects Claude to [Scrapfly](https://scrapfly.io)
-and teaches it every Scrapfly product: scrape a page as markdown, capture a
-screenshot, extract structured data with AI, and drive a cloud browser.
+Answers from the web for Claude Code. This plugin connects Claude to [Scrapfly](https://scrapfly.io)
+so it can read public web pages and answer from them, with every answer linked
+to its source.
 
 It adds:
 
-- **Scrapfly's hosted MCP server** (`plugin/.mcp.json`): scraping, screenshots, Cloud
-  Browser sessions and page interaction, WebMCP, monitoring, alerts,
-  documentation search and account tools.
-- **Six skills** that pick the right product for a task and know its
-  parameters, costs and errors:
+- **Scrapfly's hosted MCP server** (`plugin/.mcp.json`), signed in with OAuth.
+- **Task skills** that know how to answer a kind of question:
 
-  | Skill | Covers |
+  | Skill | Answers |
   |---|---|
-  | `scrapfly` | Picks the product and the tool, shared rules, costs at a glance |
-  | `web-scraping-api` | The content of a URL: rendering, proxies, country, the Unblocker, headers, cookies, scenarios, cache |
-  | `screenshot-api` | Images of a page or an element |
-  | `extraction-api` | Structured data with an LLM prompt or an AI model |
-  | `cloud-browser` | A remote browser driven through MCP tools |
-  | `mcp-server` | The connection, its tools, the account, alerts |
+  | `prices-and-plans` | What a product or plan costs, compared across vendors |
+  | `product-data` | Product details, specifications, availability and reviews |
+  | `job-postings` | Open roles on a careers page or job board |
+  | `property-listings` | Homes and rentals with price, size and location |
+  | `news-coverage` | Article summaries and how outlets covered a story |
+  | `read-docs` | Current documentation, changelogs and release notes |
+  | `seo-audit` | On-page SEO findings with fixes |
+  | `page-screenshots` | How a page looks, on desktop, mobile or in dark mode |
+  | `scrapfly` | The tools, costs and rules every task shares |
+  | `mcp-server` | The connection, credits, usage metrics and alerts |
 
-- **Commands** for the common jobs:
+- **Commands**:
 
   | Command | Does |
   |---|---|
-  | `/scrapfly:setup` | Checks the sign-in, the MCP connection and the account's credits |
-  | `/scrapfly:scrape <url> [what to get]` | Fetches a page, returns its content or the details asked for |
+  | `/scrapfly:setup` | Checks the sign-in and the account's credits |
+  | `/scrapfly:scrape <url> [what to get]` | Reads a page, returns its content or the details asked for |
   | `/scrapfly:screenshot <url> [fullpage, viewport or selector] [mobile] [dark]` | Captures a page or an element |
-  | `/scrapfly:extract <url> [what to extract or model]` | Extracts structured data as JSON |
-
-Plain requests work too: the skills choose the product and the tool.
+  | `/scrapfly:extract <url> [what to extract or model]` | Returns structured data as JSON |
 
 ## Install
 
@@ -39,13 +38,6 @@ In Claude Code:
 ```text
 /plugin marketplace add scrapfly/scrapfly-claude-plugin
 /plugin install scrapfly@scrapfly
-```
-
-Or from a shell:
-
-```bash
-claude plugin marketplace add scrapfly/scrapfly-claude-plugin
-claude plugin install scrapfly@scrapfly
 ```
 
 Then run `/reload-plugins` or start a new session.
@@ -61,71 +53,30 @@ Then run `/reload-plugins` or start a new session.
 The plugin uses OAuth only: no API key is stored in the plugin, your
 environment or your files.
 
-## Products
-
-| Product | What for | Documentation |
-|---|---|---|
-| Web Scraping API | The content of any URL, rendered in a browser when needed, through datacenter or residential proxies in the country you pick, with the Unblocker for pages that need it | [docs](https://scrapfly.io/docs/scrape-api/getting-started) |
-| Screenshot API | Full-page, window or element captures, at any resolution | [docs](https://scrapfly.io/docs/screenshot-api/getting-started) |
-| Extraction API | JSON from a page: LLM prompts and AI models (product, article, review list, job posting and more) | [docs](https://scrapfly.io/docs/extraction-api/getting-started) |
-| Cloud Browser | A remote Chrome driven by Claude through MCP tools | [docs](https://scrapfly.io/docs/cloud-browser-api/getting-started) |
-| MCP server | The tools above for any MCP client | [docs](https://scrapfly.io/docs/mcp/getting-started) |
-
 ## Examples
 
 ```text
-/scrapfly:scrape https://web-scraping.dev/products list the product names and prices
-/scrapfly:screenshot https://web-scraping.dev/product/1 mobile
+Compare the pricing plans of three email marketing tools.
+What backend roles is this company hiring for, and which are remote?
+Summarize how these three sites covered the same announcement.
+Audit the SEO of https://web-scraping.dev/products and show it on a phone.
 /scrapfly:extract https://web-scraping.dev/product/1 product
-```
-
-```text
-Open https://web-scraping.dev/products in a Scrapfly cloud browser, go to the second page and list its products.
-Get the request headers httpbin.dev sees from a Scrapfly scrape through a German proxy.
-How many Scrapfly credits do I have left?
 ```
 
 ## Costs
 
-Every call is billed in API credits of your plan: a scrape through a datacenter
-proxy costs 1 credit, JavaScript rendering 5 more, a residential proxy 25, a
-screenshot 60, an extraction 1 to 5, and a Cloud Browser session its time and
-bandwidth. The skills give Claude the full table, Claude reports what each call
-cost, and it asks before work expected to cost more than 100 credits. See
-[pricing](https://scrapfly.io/pricing) and the
-[billing documentation](https://scrapfly.io/docs/scrape-api/billing).
+Every call is billed in API credits of your plan: reading a static page costs 1
+credit, JavaScript rendering 5 more, an extraction 5, and a screenshot 60.
+Claude reports what each call cost and asks before work expected to cost more
+than 100 credits. See [pricing](https://scrapfly.io/pricing).
 
 ## Data and terms
 
-The URLs and options of each request go to Scrapfly, and the content Scrapfly
-fetches comes back into your Claude Code session: include only what the task
-needs. Besides the MCP server at `mcp.scrapfly.io`, code examples in the
-product skills call Scrapfly's HTTP API at `api.scrapfly.io` and its Cloud
-Browser at `browser.scrapfly.io`; those calls use your own API key and go only
-to Scrapfly. Claude treats fetched content as data, not as instructions. Use of
-Scrapfly is subject to its [terms of service](https://scrapfly.io/terms-of-service)
-and [privacy policy](https://scrapfly.io/privacy-policy).
-
-## Skill synchronization
-
-The four product skills (`web-scraping-api`, `screenshot-api`, `extraction-api`
-and `cloud-browser`) are generated from
-[`scrapfly/skills`](https://github.com/scrapfly/skills), their golden source.
-The `scrapfly` and `mcp-server` skills, commands, plugin configuration and the
-small Claude-specific rules in `scripts/skill-overrides/` are maintained here.
-The hourly sync workflow also runs after a change to its script and can be
-started manually with **Run workflow**. It validates the plugin and publishes
-only when a product skill changed.
-
-To run the sync and its tests locally:
-
-```bash
-python3 -m unittest discover -s scripts/tests -t scripts/tests
-python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out plugin
-
-# Report drift without changing the plugin
-python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out plugin --check
-```
+The URLs of each request go to Scrapfly at `mcp.scrapfly.io`, and the content
+of the pages comes back into your Claude Code session. Claude treats page
+content as data, not as instructions. Use of Scrapfly is subject to its
+[terms of service](https://scrapfly.io/terms-of-service) and
+[privacy policy](https://scrapfly.io/privacy-policy).
 
 ## Development
 
@@ -133,14 +84,6 @@ python3 scripts/sync-skills.py --skills /path/to/scrapfly-skills --out plugin --
 claude plugin validate plugin --strict --profile directory
 claude --plugin-dir plugin
 ```
-
-## Links
-
-- [Scrapfly documentation](https://scrapfly.io/docs)
-- [Scrapfly MCP server](https://github.com/scrapfly/scrapfly-mcp)
-- [Scrapfly CLI](https://github.com/scrapfly/scrapfly-cli)
-- [Skills for the SDKs and the CLI](https://github.com/scrapfly/skills)
-- [Support](https://scrapfly.io/docs/support)
 
 ## License
 

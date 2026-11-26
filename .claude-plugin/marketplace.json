@@ -9,13 +9,13 @@
     {
       "name": "scrapfly",
       "source": "./plugin",
-      "description": "Web data for Claude Code: scrape pages, capture screenshots, extract structured data with AI, and drive cloud browsers with Scrapfly.",
+      "description": "Answers from the web: prices, products, jobs, listings, news, docs, SEO checks and screenshots, read from public pages with sources.",
       "category": "data",
       "tags": [
-        "web-scraping",
+        "web-data",
+        "research",
+        "seo",
         "screenshot",
-        "extraction",
-        "cloud-browser",
         "mcp"
       ]
     }

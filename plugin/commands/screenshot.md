@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Request: $ARGUMENTS
 
-Follow the `scrapfly:screenshot-api` skill.
+Follow the `scrapfly:page-screenshots` skill.
 
 1. Take the URL from the request. If there is none, ask for it.
 2. Call the `screenshot` tool. `capture` is `fullpage` unless the request names
